@@ -60,7 +60,7 @@ let qrcode = new PaynowQR({
 | --- | --- |
 | `proxyType` | Optional. `'2'` for UEN (default), `'0'` for PayNow mobile proxy. |
 | `uen` | Required when `proxyType` is `'2'`. The merchant UEN registered with PayNow. |
-| `mobile` | Required when `proxyType` is `'0'`. Singapore mobile number linked to PayNow. |
+| `mobile` | Required when `proxyType` is `'0'`. Singapore mobile number linked to PayNow (8 digits; `+65` prefix optional). |
 | `amount` | Optional numeric amount. When omitted the QR is marked editable. |
 | `editable` | Optional boolean to force amount editability. |
 | `expiry` | Optional `YYYYMMDD` expiry. Defaults to 5 years from now. |

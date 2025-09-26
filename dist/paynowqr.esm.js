@@ -113,13 +113,26 @@ class PaynowQR{
       ? [opts.mobile, opts.mobileNumber, opts.proxyValue, opts.account]
       : [opts.uen, opts.proxyValue, opts.account];
 
-    const value = candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '');
+    let value = candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '');
 
     if (value === undefined) {
       throw new Error('PayNow proxy value is required for the selected account type.');
     }
 
-    return String(value).trim();
+    value = String(value).trim();
+
+    if (proxyType === '0') {
+      const digitsOnly = value.replace(/\D+/g, '');
+      const normalized = digitsOnly.startsWith('65') ? digitsOnly : `65${digitsOnly}`;
+
+      if (!/^65\d{8}$/.test(normalized)) {
+        throw new Error('PayNow mobile proxies must include an 8-digit Singapore number (optionally prefixed by +65).');
+      }
+
+      return normalized;
+    }
+
+    return value;
   }
 
   

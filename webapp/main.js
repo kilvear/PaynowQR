@@ -30,8 +30,8 @@ const PROXY_CONFIG = {
   },
   '0': {
     label: 'Mobile Number',
-    placeholder: 'e.g. 12345678',
-    hint: 'PayNow registered Singapore mobile number (8 digits).',
+    placeholder: 'e.g. +65 91234567',
+    hint: 'PayNow registered Singapore mobile number (8 digits, optional +65).',
   },
 };
 
@@ -42,7 +42,7 @@ function updateProxyField() {
   proxyValueInput.placeholder = config.placeholder;
   proxyHint.textContent = config.hint;
   proxyValueInput.setAttribute('inputmode', type === '0' ? 'tel' : 'text');
-  proxyValueInput.setAttribute('pattern', type === '0' ? '\\d{8}' : '.*');
+  proxyValueInput.removeAttribute('pattern');
   proxyValueInput.focus();
 }
 
@@ -72,17 +72,13 @@ function buildOptions() {
     throw new Error(`Please enter a valid ${proxyType === '0' ? 'mobile number' : 'UEN'}.`);
   }
 
-  if (proxyType === '0' && !/^\d{8}$/.test(proxyValue)) {
-    throw new Error('Mobile number must be 8 digits with no country code.');
-  }
-
   const opts = {
     proxyType,
     editable: editableCheckbox.checked,
   };
 
   if (proxyType === '0') {
-    opts.mobile = proxyValue;
+    opts.mobile = normalizeMobile(proxyValue);
   } else {
     opts.uen = proxyValue;
   }
@@ -273,6 +269,17 @@ logoRemoveButton.addEventListener('click', () => {
 
 updateProxyField();
 resetDownloadLink();
+
+function normalizeMobile(input) {
+  const digits = input.replace(/\D+/g, '');
+  if (digits.length === 8) {
+    return digits;
+  }
+  if (digits.length === 10 && digits.startsWith('65')) {
+    return digits.slice(2);
+  }
+  throw new Error('Mobile number must be an 8-digit Singapore number (with optional +65 prefix).');
+}
 
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {

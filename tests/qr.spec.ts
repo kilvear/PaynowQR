@@ -78,6 +78,7 @@ function expectContainsSegments(payload: string, segments: Array<RegExp | string
 
 const UEN = '201817593E';
 const MOBILE = '92717425';
+const MOBILE_WITH_CC = `65${MOBILE}`;
 const LOGO_FILE = { name: 'logo.png', mimeType: 'image/png', buffer: logoBuffer };
 
 test('generates QR for UEN with fixed amount', async ({ page }) => {
@@ -122,8 +123,9 @@ test('generates QR for mobile proxy without amount', async ({ page }) => {
   });
 
   expectContainsSegments(payload, [
-    MOBILE,
-    '01010020', // mobile proxy indicator inside tag 26
+    MOBILE_WITH_CC,
+    '010100', // 26-01 indicates mobile proxy (value 0)
+    '02106592717425', // 26-02 holds mobile with country code
     '030110',
     '54010',
   ]);
@@ -138,7 +140,9 @@ test('accepts mobile proxy with preset amount', async ({ page }) => {
   });
 
   expectContainsSegments(payload, [
-    MOBILE,
+    MOBILE_WITH_CC,
+    '010100',
+    '02106592717425',
     /540250/, // amount 50.00 gets serialized as 50
     '030100',
   ]);

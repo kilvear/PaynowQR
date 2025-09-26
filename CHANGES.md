@@ -9,6 +9,8 @@ history is easy to scan when preparing deployments.
 - **Logo overlay** – Uploaded images (PNG/JPEG/SVG ≤ 200&nbsp;KB) are embedded
   into the generated SVG with protective white padding so branded codes remain
   scannable.
+- **Mobile proxy normalisation** – Automatically prefixes `65` to mobile
+  proxies (accepting optional `+65`) to comply with the PayNow SGQR schema.
 - **Download support** – Added a `Download SVG` action that exports the latest
   QR (including logo) using a blob URL; object URLs are revoked on reset/unload
   to avoid leaks.
