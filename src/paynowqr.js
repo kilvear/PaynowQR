@@ -80,6 +80,40 @@ class PaynowQR{
     return ((crc ^ 0) & 0xFFFF).toString(16).toUpperCase();
   }
   
+  resolveProxyType(opts) {
+    const explicit = opts.hasOwnProperty('proxyType') ? opts.proxyType : opts.accountType;
+    if (explicit !== undefined && explicit !== null) {
+      const normalized = String(explicit).trim();
+      if (normalized === '0' || normalized === '2') {
+        return normalized;
+      }
+      throw new Error('Invalid PayNow proxy type. Use "0" for mobile or "2" for UEN.');
+    }
+
+    if (opts.mobile !== undefined && opts.mobile !== null) {
+      return '0';
+    }
+    if (opts.mobileNumber !== undefined && opts.mobileNumber !== null) {
+      return '0';
+    }
+
+    return '2';
+  }
+
+  resolveProxyValue(proxyType, opts) {
+    const candidates = proxyType === '0'
+      ? [opts.mobile, opts.mobileNumber, opts.proxyValue, opts.account]
+      : [opts.uen, opts.proxyValue, opts.account];
+
+    const value = candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '');
+
+    if (value === undefined) {
+      throw new Error('PayNow proxy value is required for the selected account type.');
+    }
+
+    return String(value).trim();
+  }
+
   
   generate( opts ) {
 
@@ -90,14 +124,17 @@ class PaynowQR{
     }
 
   
+    const proxyType = this.resolveProxyType(opts);
+    const proxyValue = this.resolveProxyValue(proxyType, opts);
+
     const p = [
       { id: '00', value: '01' },                    // ID 00: Payload Format Indicator (Fixed to '01')
       { id: '01', value: '12' },                    // ID 01: Point of Initiation Method 11: static, 12: dynamic
       {
         id: '26', value:                            // ID 26: Merchant Account Info Template
           [{ id: '00', value: 'SG.PAYNOW' },
-          { id: '01', value: '2' },                 // 0 for mobile, 2 for UEN. 1 is not used.
-          { id: '02', value: String(opts.uen) },            // PayNow UEN (Company Unique Entity Number)
+          { id: '01', value: proxyType },           // 0 for mobile, 2 for UEN. 1 is reserved in SGQR.
+          { id: '02', value: proxyValue },          // PayNow proxy identifier (mobile number or UEN)
           { id: '03', value: String(! opts.amount ||opts.editable ? 1 : 0) },       // 1 = Payment amount is editable, 0 = Not Editable
           { id: '04', value: String(opts.expiry|| dayjs().add(5,"year").format('YYYYMMDD') )}]         // Expiry date (YYYYMMDD)
       },
