@@ -41,7 +41,8 @@ You can use the CDN link provided by unpkg:
 ```javascript
 //Create a PaynowQR object
 let qrcode = new PaynowQR({
-    uen:'201403121W',           //Required: UEN of company
+    proxyType: '2',             //Optional: '2' for UEN (default), '0' for mobile number
+    uen:'201403121W',           //Required when proxyType is '2'
     amount : 500,               //Specify amount of money to pay.
     editable: true,             //Whether or not to allow editing of payment amount. Defaults to false if amount is specified
     expiry: '20201231',         //Set an expiry date for the Paynow QR code (YYYYMMDD). If omitted, defaults to 5 years from current time.
@@ -52,6 +53,27 @@ let qrcode = new PaynowQR({
   //Outputs the qrcode to a UTF-8 string format, which can be passed to a QR code generation script to generate the paynow QR
   let QRstring = qrcode.output();
 ```
+
+### Available options
+
+| Option | Description |
+| --- | --- |
+| `proxyType` | Optional. `'2'` for UEN (default), `'0'` for PayNow mobile proxy. |
+| `uen` | Required when `proxyType` is `'2'`. The merchant UEN registered with PayNow. |
+| `mobile` | Required when `proxyType` is `'0'`. Singapore mobile number linked to PayNow. |
+| `amount` | Optional numeric amount. When omitted the QR is marked editable. |
+| `editable` | Optional boolean to force amount editability. |
+| `expiry` | Optional `YYYYMMDD` expiry. Defaults to 5 years from now. |
+| `refNumber` | Optional bill / reference shown to payer. |
+| `company` | Optional merchant label shown to payer. |
+
+### Logo overlay
+
+The browser demo (`webapp/`) now supports uploading a small image (PNG/JPEG/SVG) that gets embedded into the PayNow QR as an inline SVG `<image>` with automatic padding. Keep the logo under ~200&nbsp;KB and constrain it to simple artwork so the QR remains scannable. After generating, click the `Download SVG` action to save the branded code.
+
+## Web demo
+
+A lightweight UI lives in `webapp/` for manual testing. Run `npm run build` once to refresh the bundled library (copies the latest UMD build into `webapp/vendor/`), then serve the folder with any static file server—for example `python3 -m http.server 4173 --directory webapp`—and open it in a browser to generate and scan PayNow QR codes interactively.
 
 
 ## Potential usecases:
