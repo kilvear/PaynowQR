@@ -1,7 +1,4 @@
 const form = document.getElementById('qr-form');
-const proxyTypeSelect = document.getElementById('proxyType');
-const proxyLabel = document.getElementById('proxyLabel');
-const proxyHint = document.getElementById('proxyHint');
 const proxyValueInput = document.getElementById('proxyValue');
 const amountInput = document.getElementById('amount');
 const editableCheckbox = document.getElementById('editable');
@@ -22,30 +19,6 @@ let logoDataUrl = null;
 let lastSvgMarkup = null;
 let downloadSvgUrl = null;
 
-const PROXY_CONFIG = {
-  '2': {
-    label: 'UEN',
-    placeholder: 'e.g. 201403121W',
-    hint: 'Company UEN registered with PayNow.',
-  },
-  '0': {
-    label: 'Mobile Number',
-    placeholder: 'e.g. +65 91234567',
-    hint: 'PayNow registered Singapore mobile number (8 digits, optional +65).',
-  },
-};
-
-function updateProxyField() {
-  const type = proxyTypeSelect.value;
-  const config = PROXY_CONFIG[type] || PROXY_CONFIG['2'];
-  proxyLabel.textContent = config.label;
-  proxyValueInput.placeholder = config.placeholder;
-  proxyHint.textContent = config.hint;
-  proxyValueInput.setAttribute('inputmode', type === '0' ? 'tel' : 'text');
-  proxyValueInput.removeAttribute('pattern');
-  proxyValueInput.focus();
-}
-
 function toExpiryValue(input) {
   if (!input) {
     return undefined;
@@ -65,23 +38,18 @@ function sanitizeAmount(value) {
 }
 
 function buildOptions() {
-  const proxyType = proxyTypeSelect.value;
   const proxyValue = proxyValueInput.value.trim();
 
   if (!proxyValue) {
-    throw new Error(`Please enter a valid ${proxyType === '0' ? 'mobile number' : 'UEN'}.`);
+    throw new Error('Please enter a valid UEN.');
   }
 
   const opts = {
-    proxyType,
+    proxyType: '2',
     editable: editableCheckbox.checked,
   };
 
-  if (proxyType === '0') {
-    opts.mobile = normalizeMobile(proxyValue);
-  } else {
-    opts.uen = proxyValue;
-  }
+  opts.uen = proxyValue;
 
   const amountValue = sanitizeAmount(amountInput.value);
   if (amountValue !== undefined) {
@@ -224,12 +192,10 @@ form.addEventListener('submit', (event) => {
   }
 });
 
-proxyTypeSelect.addEventListener('change', updateProxyField);
 clearButton.addEventListener('click', () => {
   form.reset();
   outputSection.classList.add('hidden');
   clearError();
-  updateProxyField();
   payloadBox.value = '';
   qrContainer.innerHTML = '';
   resetLogo();
@@ -267,19 +233,7 @@ logoRemoveButton.addEventListener('click', () => {
   resetLogo();
 });
 
-updateProxyField();
 resetDownloadLink();
-
-function normalizeMobile(input) {
-  const digits = input.replace(/\D+/g, '');
-  if (digits.length === 8) {
-    return digits;
-  }
-  if (digits.length === 10 && digits.startsWith('65')) {
-    return digits.slice(2);
-  }
-  throw new Error('Mobile number must be an 8-digit Singapore number (with optional +65 prefix).');
-}
 
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {

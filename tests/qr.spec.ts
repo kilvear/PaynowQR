@@ -4,8 +4,7 @@ import path from 'path';
 
 const logoBuffer = fs.readFileSync(path.join(__dirname, 'assets', 'logo.png'));
 
-async function generateQr(page, { proxyType, proxyValue, amount, editable, company, refNumber, expiry, logo }: {
-  proxyType: '0' | '2';
+async function generateQr(page, { proxyValue, amount, editable, company, refNumber, expiry, logo }: {
   proxyValue: string;
   amount?: string;
   editable?: boolean;
@@ -16,7 +15,6 @@ async function generateQr(page, { proxyType, proxyValue, amount, editable, compa
 }) {
   await page.goto('./');
 
-  await page.selectOption('#proxyType', proxyType);
   await page.fill('#proxyValue', proxyValue);
 
   await page.fill('#amount', '');
@@ -77,13 +75,10 @@ function expectContainsSegments(payload: string, segments: Array<RegExp | string
 }
 
 const UEN = '201817593E';
-const MOBILE = '92717425';
-const MOBILE_WITH_CC = `65${MOBILE}`;
 const LOGO_FILE = { name: 'logo.png', mimeType: 'image/png', buffer: logoBuffer };
 
 test('generates QR for UEN with fixed amount', async ({ page }) => {
   const payload = await generateQr(page, {
-    proxyType: '2',
     proxyValue: UEN,
     amount: '123.45',
     editable: false,
@@ -103,7 +98,6 @@ test('generates QR for UEN with fixed amount', async ({ page }) => {
 
 test('allows payer-decided amount for UEN when amount omitted', async ({ page }) => {
   const payload = await generateQr(page, {
-    proxyType: '2',
     proxyValue: UEN,
     editable: true,
   });
@@ -115,42 +109,8 @@ test('allows payer-decided amount for UEN when amount omitted', async ({ page })
   ]);
 });
 
-test('generates QR for mobile proxy without amount', async ({ page }) => {
-  const payload = await generateQr(page, {
-    proxyType: '0',
-    proxyValue: MOBILE,
-    editable: true,
-  });
-
-  expectContainsSegments(payload, [
-    MOBILE_WITH_CC,
-    '010100', // 26-01 indicates mobile proxy (value 0)
-    '02106592717425', // 26-02 holds mobile with country code
-    '030110',
-    '54010',
-  ]);
-});
-
-test('accepts mobile proxy with preset amount', async ({ page }) => {
-  const payload = await generateQr(page, {
-    proxyType: '0',
-    proxyValue: MOBILE,
-    amount: '50',
-    editable: false,
-  });
-
-  expectContainsSegments(payload, [
-    MOBILE_WITH_CC,
-    '010100',
-    '02106592717425',
-    /540250/, // amount 50.00 gets serialized as 50
-    '030100',
-  ]);
-});
-
 test('embeds uploaded logo into QR SVG', async ({ page }) => {
   await generateQr(page, {
-    proxyType: '2',
     proxyValue: UEN,
     amount: '10',
     editable: false,

@@ -84,47 +84,29 @@ class PaynowQR{
     const explicit = opts.hasOwnProperty('proxyType') ? opts.proxyType : opts.accountType;
     if (explicit !== undefined && explicit !== null) {
       const normalized = String(explicit).trim();
-      if (normalized === '0' || normalized === '2') {
-        return normalized;
+      if (normalized !== '2') {
+        throw new Error('Only UEN PayNow proxies are supported in this generator.');
       }
-      throw new Error('Invalid PayNow proxy type. Use "0" for mobile or "2" for UEN.');
+      return normalized;
     }
 
-    if (opts.mobile !== undefined && opts.mobile !== null) {
-      return '0';
-    }
-    if (opts.mobileNumber !== undefined && opts.mobileNumber !== null) {
-      return '0';
+    if (opts.mobile || opts.mobileNumber) {
+      throw new Error('PayNow mobile proxies are not supported. Use a UEN.');
     }
 
     return '2';
   }
 
   resolveProxyValue(proxyType, opts) {
-    const candidates = proxyType === '0'
-      ? [opts.mobile, opts.mobileNumber, opts.proxyValue, opts.account]
-      : [opts.uen, opts.proxyValue, opts.account];
+    const candidates = [opts.uen, opts.proxyValue, opts.account];
 
-    let value = candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '');
+    const value = candidates.find(v => v !== undefined && v !== null && String(v).trim() !== '');
 
     if (value === undefined) {
-      throw new Error('PayNow proxy value is required for the selected account type.');
+      throw new Error('PayNow UEN is required.');
     }
 
-    value = String(value).trim();
-
-    if (proxyType === '0') {
-      const digitsOnly = value.replace(/\D+/g, '');
-      const normalized = digitsOnly.startsWith('65') ? digitsOnly : `65${digitsOnly}`;
-
-      if (!/^65\d{8}$/.test(normalized)) {
-        throw new Error('PayNow mobile proxies must include an 8-digit Singapore number (optionally prefixed by +65).');
-      }
-
-      return normalized;
-    }
-
-    return value;
+    return String(value).trim();
   }
 
   
@@ -146,8 +128,8 @@ class PaynowQR{
       {
         id: '26', value:                            // ID 26: Merchant Account Info Template
           [{ id: '00', value: 'SG.PAYNOW' },
-          { id: '01', value: proxyType },           // 0 for mobile, 2 for UEN. 1 is reserved in SGQR.
-          { id: '02', value: proxyValue },          // PayNow proxy identifier (mobile number or UEN)
+          { id: '01', value: proxyType },           // 2 for UEN. 0 (mobile) is not supported for SGQR merchants.
+          { id: '02', value: proxyValue },          // PayNow proxy identifier (UEN)
           { id: '03', value: String(! opts.amount ||opts.editable ? 1 : 0) },       // 1 = Payment amount is editable, 0 = Not Editable
           { id: '04', value: String(opts.expiry|| dayjs().add(5,"year").format('YYYYMMDD') )}]         // Expiry date (YYYYMMDD)
       },

@@ -41,8 +41,8 @@ You can use the CDN link provided by unpkg:
 ```javascript
 //Create a PaynowQR object
 let qrcode = new PaynowQR({
-    proxyType: '2',             //Optional: '2' for UEN (default), '0' for mobile number
-    uen:'201403121W',           //Required when proxyType is '2'
+    proxyType: '2',             //Optional: UEN only
+    uen:'201403121W',           //Required UEN registered with PayNow
     amount : 500,               //Specify amount of money to pay.
     editable: true,             //Whether or not to allow editing of payment amount. Defaults to false if amount is specified
     expiry: '20201231',         //Set an expiry date for the Paynow QR code (YYYYMMDD). If omitted, defaults to 5 years from current time.
@@ -58,9 +58,9 @@ let qrcode = new PaynowQR({
 
 | Option | Description |
 | --- | --- |
-| `proxyType` | Optional. `'2'` for UEN (default), `'0'` for PayNow mobile proxy. |
-| `uen` | Required when `proxyType` is `'2'`. The merchant UEN registered with PayNow. |
-| `mobile` | Required when `proxyType` is `'0'`. Singapore mobile number linked to PayNow (8 digits; `+65` prefix optional). |
+| `proxyType` | Optional. Only `'2'` (UEN) is supported. |
+| `uen` | Required. The merchant UEN registered with PayNow. |
+| `mobile` | Deprecated. Mobile proxies are not supported because PayNow SGQR merchant flows require UENs. |
 | `amount` | Optional numeric amount. When omitted the QR is marked editable. |
 | `editable` | Optional boolean to force amount editability. |
 | `expiry` | Optional `YYYYMMDD` expiry. Defaults to 5 years from now. |

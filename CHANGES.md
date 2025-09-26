@@ -9,8 +9,8 @@ history is easy to scan when preparing deployments.
 - **Logo overlay** – Uploaded images (PNG/JPEG/SVG ≤ 200&nbsp;KB) are embedded
   into the generated SVG with protective white padding so branded codes remain
   scannable.
-- **Mobile proxy normalisation** – Automatically prefixes `65` to mobile
-  proxies (accepting optional `+65`) to comply with the PayNow SGQR schema.
+- **UEN-only enforcement** – Removed PayNow mobile proxy support to align with
+  SGQR merchant requirements and prevent generation of consumer-only codes.
 - **Download support** – Added a `Download SVG` action that exports the latest
   QR (including logo) using a blob URL; object URLs are revoked on reset/unload
   to avoid leaks.
@@ -21,18 +21,16 @@ history is easy to scan when preparing deployments.
 
 ## v1.1.0 – Configurable proxies & web demo (2024-09-24)
 
-- **Proxy selection** – Generator now supports both UEN (`proxyType: '2'`) and
-  PayNow mobile proxies (`proxyType: '0'`), validating identifiers and emitting
-  descriptive errors for unsupported values.
+- **Proxy selection** – Generator expanded to accept configurable UEN inputs
+  with validation and clearer error messaging.
 - **Input sanitisation** – Centralised string trimming and proxy-value
   resolution to prevent `undefined` strings in EMV tags.
 - **Browser demo** – Built the `webapp/` interface with inputs for amount,
-  editability, company label, reference number, expiry, and account type.
+  editability, company label, reference number, and expiry date.
 - **QR preview** – Client-side rendering via the bundled UMD build, including
   responsive layout and error handling.
 - **Build tooling** – Rollup + Terser build with `postbuild` copy step to
-  populate `webapp/vendor/`; added Playwright end-to-end tests for UEN/mobile
-  scenarios.
+  populate `webapp/vendor/`; added Playwright end-to-end tests for UEN flows.
 - **Documentation** – README now lists all configurable options and explains
   how to serve the demo.
 
